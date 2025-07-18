@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; }
+    .panel-container { max-width: 900px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+    h2 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #007bff; color: #fff; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .logout { float: right; margin-top: -40px; }
+    .logout a { color: #007bff; text-decoration: none; font-weight: bold; }
+    .logout a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="panel-container">
+    <div class="logout"><a href="/admin/logout">Logout</a></div>
+    <h2>Contact Submissions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Company</th>
+          <th>Topics</th>
+          <th>Message</th>
+          <th>File</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% contacts.forEach(function(contact) { %>
+          <tr>
+            <td><%= contact.name %></td>
+            <td><%= contact.email %></td>
+            <td><%= contact.phone %></td>
+            <td><%= contact.company || '' %></td>
+            <td><%= (contact.topics || []).join(', ') %></td>
+            <td><%= contact.message %></td>
+            <td>
+              <% if (contact.file && contact.file.filename) { %>
+                <a href="/uploads/<%= contact.file.filename %>" target="_blank">Download</a>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+            <td><%= contact.createdAt.toLocaleString() %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html> 
