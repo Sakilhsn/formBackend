@@ -7,6 +7,7 @@ const contactSchema = new mongoose.Schema({
   message: { type: String, required: true },
   company: { type: String },
   topics: [{ type: String }],
+  googleDriveLink: { type: String },
   file: {
     originalname: String,
     filename: String,

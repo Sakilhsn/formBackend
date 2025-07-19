@@ -21,7 +21,16 @@ const upload = multer({ storage });
 router.post('/', upload.single('file'), async (req, res) => {
   console.log('BODY:', req.body); // Debug line
   console.log('FILE:', req.file); // Debug line
-  const { name, email, phone, message, company, topics } = req.body;
+  const { name, email, phone, message, company, topics, googleDriveLink, gdlink, driveLink } = req.body;
+  
+  // Handle multiple possible field names for Google Drive link
+  const finalGoogleDriveLink = googleDriveLink || gdlink || driveLink;
+  
+  console.log('Extracted googleDriveLink:', googleDriveLink); // Debug line
+  console.log('Extracted gdlink:', gdlink); // Debug line
+  console.log('Extracted driveLink:', driveLink); // Debug line
+  console.log('Final Google Drive Link:', finalGoogleDriveLink); // Debug line
+  
   if (!name || !email || !phone || !message) {
     return res.status(400).json({ error: 'Name, email, phone, and message are required.' });
   }
@@ -32,13 +41,15 @@ router.post('/', upload.single('file'), async (req, res) => {
         ? topics
         : topics.split(',').map(t => t.trim())
       : undefined;
-    const contact = new Contact({
+    
+    const contactData = {
       name,
       email,
       phone,
       message,
       company,
       topics: topicsArray,
+      googleDriveLink: finalGoogleDriveLink,
       file: req.file
         ? {
             originalname: req.file.originalname,
@@ -47,8 +58,14 @@ router.post('/', upload.single('file'), async (req, res) => {
             mimetype: req.file.mimetype,
           }
         : undefined,
-    });
+    };
+    
+    console.log('Contact data to save:', contactData); // Debug line
+    const contact = new Contact(contactData);
+    console.log('Contact object before save:', contact); // Debug line
+    
     await contact.save();
+    console.log('Contact saved successfully:', contact); // Debug line
 
     // Send email with contact info
     // Configure your email transport (example uses Gmail)
@@ -73,6 +90,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         <p><b>Company:</b> ${contact.company || ''}</p>
         <p><b>Topics:</b> ${(contact.topics || []).join(', ')}</p>
         <p><b>Message:</b> ${contact.message}</p>
+        ${contact.googleDriveLink ? `<p><b>Google Drive Link:</b> <a href="${contact.googleDriveLink}" target="_blank">${contact.googleDriveLink}</a></p>` : ''}
         ${contact.file && contact.file.filename ? `<p><b>File:</b> <a href="${req.protocol}://${req.get('host')}/uploads/${contact.file.filename}">Download</a></p>` : ''}
         <p><b>Submitted At:</b> ${contact.createdAt.toLocaleString()}</p>
       `
@@ -89,8 +107,25 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     res.status(201).json({ message: 'Contact form submitted successfully.' });
   } catch (err) {
+    console.error('Error saving contact:', err); // Debug line
     res.status(500).json({ error: 'Failed to submit contact form.' });
   }
+});
+
+// Debug route to test Google Drive link
+router.post('/debug', (req, res) => {
+  console.log('DEBUG - Full request body:', req.body);
+  console.log('DEBUG - All field names:', Object.keys(req.body));
+  console.log('DEBUG - googleDriveLink value:', req.body.googleDriveLink);
+  console.log('DEBUG - gdlink value:', req.body.gdlink);
+  console.log('DEBUG - driveLink value:', req.body.driveLink);
+  res.json({ 
+    message: 'Debug info logged',
+    receivedFields: Object.keys(req.body),
+    googleDriveLink: req.body.googleDriveLink,
+    gdlink: req.body.gdlink,
+    driveLink: req.body.driveLink
+  });
 });
 
 module.exports = router; 
