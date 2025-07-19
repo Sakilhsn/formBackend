@@ -43,8 +43,12 @@
             <td><%= contact.message %></td>
             <td>
               <% if (contact.file && contact.file.filename) { %>
-                <a href="/uploads/<%= contact.file.filename %>" target="_blank">Download</a>
-              <% } else { %>
+                <a href="/uploads/<%= contact.file.filename %>" target="_blank">Download File</a><br>
+              <% } %>
+              <% if (contact.googleDriveLink) { %>
+                <a href="<%= contact.googleDriveLink %>" target="_blank">Google Drive Link</a>
+              <% } %>
+              <% if (!(contact.file && contact.file.filename) && !contact.googleDriveLink) { %>
                 -
               <% } %>
             </td>
